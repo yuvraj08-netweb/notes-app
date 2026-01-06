@@ -3,14 +3,22 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { StickyNote, LogOut, User, Menu, X, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  StickyNote,
+  LogOut,
+  User,
+  Menu,
+  X,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 
 interface SidebarProps {
   user: {
-    email: string;
+    email?: string | null;
     user_metadata?: {
       name?: string;
       full_name?: string;
@@ -29,12 +37,14 @@ export default function Sidebar({ user }: SidebarProps) {
     router.push("/login");
   };
 
-  const userName = user.user_metadata?.name || user.user_metadata?.full_name || "User";
+  const userName =
+    user.user_metadata?.name || user.user_metadata?.full_name || "User";
 
   return (
     <>
       {/* Mobile Menu Button */}
       <button
+        type="button"
         onClick={() => setIsMobileOpen(true)}
         className="lg:hidden fixed top-4 left-4 z-40 p-2 bg-white rounded-lg shadow-md hover:bg-gray-50 transition-colors cursor-pointer"
         aria-label="Open menu"
@@ -44,6 +54,8 @@ export default function Sidebar({ user }: SidebarProps) {
 
       {/* Mobile Backdrop */}
       {isMobileOpen && (
+        // biome-ignore lint/a11y/noStaticElementInteractions: <sadsa>
+        // biome-ignore lint/a11y/useKeyWithClickEvents: <expldsadsaanation>
         <div
           className="lg:hidden fixed inset-0 bg-black/50 z-40"
           onClick={() => setIsMobileOpen(false)}
@@ -57,11 +69,16 @@ export default function Sidebar({ user }: SidebarProps) {
           ${isCollapsed ? "lg:w-20" : "lg:w-64"}
           w-64
           fixed lg:sticky top-0 z-50
-          ${isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+          ${
+            isMobileOpen
+              ? "translate-x-0"
+              : "-translate-x-full lg:translate-x-0"
+          }
         `}
       >
         {/* Close Button (Mobile) */}
         <button
+          type="button"
           onClick={() => setIsMobileOpen(false)}
           className="lg:hidden absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
           aria-label="Close menu"
@@ -71,12 +88,18 @@ export default function Sidebar({ user }: SidebarProps) {
 
         {/* Logo/Brand */}
         <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-          {!isCollapsed && <h2 className="text-xl font-bold text-gray-800">Notes App</h2>}
-          {isCollapsed && <StickyNote className="h-6 w-6 text-blue-600 mx-auto" />}
+          {!isCollapsed && (
+            <h2 className="text-xl font-bold text-gray-800">Notes App</h2>
+          )}
+          {isCollapsed && (
+            // <StickyNote className="h-6 w-6 text-blue-600 mx-auto" />
+             <h2 className="text-xl font-bold text-gray-800">NA</h2>
+          )}
         </div>
 
         {/* Collapse Button (Desktop) */}
         <button
+          type="button"
           onClick={() => setIsCollapsed(!isCollapsed)}
           className="hidden lg:flex absolute -right-3 top-20 bg-white border border-gray-200 rounded-full p-1 hover:bg-gray-50 transition-colors cursor-pointer shadow-sm z-10"
           aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
@@ -100,7 +123,7 @@ export default function Sidebar({ user }: SidebarProps) {
             } ${isCollapsed ? "justify-center" : ""}`}
             title={isCollapsed ? "Notes" : ""}
           >
-            <StickyNote className="h-5 w-5 flex-shrink-0" />
+            <StickyNote className="h-5 w-5 shrink-0" />
             {!isCollapsed && <span>Notes</span>}
           </Link>
         </nav>
@@ -110,7 +133,7 @@ export default function Sidebar({ user }: SidebarProps) {
           {!isCollapsed ? (
             <>
               <div className="flex items-center gap-3 mb-3 px-2">
-                <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
                   <User className="h-5 w-5 text-blue-600" />
                 </div>
                 <div className="flex-1 min-w-0">

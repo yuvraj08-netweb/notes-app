@@ -34,6 +34,7 @@ import {
   Calendar,
   StickyNote,
 } from "lucide-react";
+import { toast } from "sonner";
 
 export default function NotesClient({ userId }: { userId: string }) {
   const [notes, setNotes] = useState<StoredNoteDoc[]>([]);
@@ -85,6 +86,10 @@ export default function NotesClient({ userId }: { userId: string }) {
       updatedAt: Date.now(),
     });
 
+    if(note){
+      toast.success("Note created successfully!");
+    }
+    
     // Optimistic UI
     setNotes((prev) => [note, ...prev]);
 
@@ -96,7 +101,13 @@ export default function NotesClient({ userId }: { userId: string }) {
 
   async function handleSync() {
     setSyncing(true);
-    await syncNotes(userId);
+    try {
+      await syncNotes(userId);
+      toast.success("Notes synchronized successfully!");
+    } catch (error) {
+      toast.error("Failed to sync notes.");
+      console.error("Error during sync:", error);
+    }
     setSyncing(false);
   }
 
@@ -174,14 +185,16 @@ export default function NotesClient({ userId }: { userId: string }) {
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card className="border-l-4 border-l-blue-500 shadow-sm hover:shadow-md transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0">
             <CardTitle className="text-sm font-medium">Total Notes</CardTitle>
-            <div className="p-2 bg-blue-100 rounded-lg">
+            <div className="p-2  bg-blue-100 rounded-lg">
               <StickyNote className="h-4 w-4 text-blue-600" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{notes.length}</div>
+            <div className="text-2xl font-bold text-blue-600">
+              {notes.length}
+            </div>
             <p className="text-xs text-muted-foreground mt-1">
               {notes.length === 1 ? "note" : "notes"} in your collection
             </p>
@@ -255,7 +268,8 @@ export default function NotesClient({ userId }: { userId: string }) {
           <DialogHeader>
             <DialogTitle>Create New Note</DialogTitle>
             <DialogDescription>
-              Add a new note to your collection. Your note will be saved automatically.
+              Add a new note to your collection. Your note will be saved
+              automatically.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -322,7 +336,7 @@ export default function NotesClient({ userId }: { userId: string }) {
 
       {/* View Note Dialog */}
       <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
-        <DialogContent className="sm:max-w-[650px]">
+        <DialogContent className="sm:max-w-162.5">
           <DialogHeader>
             <DialogTitle className="text-2xl">
               {selectedNote?.title || "Untitled"}

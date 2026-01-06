@@ -4,9 +4,13 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/providers/auth-provider";
+import { supabase } from "@/lib/supabase/client";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { supabase } from "@/lib/supabase/client";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -15,7 +19,6 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && user) {
@@ -24,8 +27,12 @@ export default function LoginPage() {
   }, [user, loading, router]);
 
   const handleLogin = async () => {
+    if (!email || !password) {
+      toast.error("Please enter your email and password.");
+      return;
+    }
+
     setSubmitting(true);
-    setError(null);
 
     const { error } = await supabase.auth.signInWithPassword({
       email,
@@ -33,48 +40,82 @@ export default function LoginPage() {
     });
 
     setSubmitting(false);
+
     if (error) {
-      setError(error.message);
+      toast.error(error.message || "An error occurred during login.");
       return;
     }
-    router.replace("/notes");
+
+    toast.success("Login successful! Redirecting…");
+    router.push("/notes");
   };
 
-  if (loading) return <p className="p-6">Checking session…</p>;
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-muted-foreground">
+        Checking session…
+      </div>
+    );
+  }
+
   if (user) return null;
 
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="w-full max-w-sm space-y-4">
-        <h1 className="text-xl font-semibold">Login</h1>
+    <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4">
+      <Card className="w-full max-w-sm">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl">Welcome back</CardTitle>
+          <CardDescription>
+            Login to continue to your notes
+          </CardDescription>
+        </CardHeader>
 
-        {error && <p className="text-sm text-red-500">{error}</p>}
+        <CardContent className="space-y-4">
 
-        <Input
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-        />
-        <Input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-        />
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+              autoComplete="email"
+            />
+          </div>
 
-        <Button className="w-full" onClick={handleLogin} disabled={submitting}>
-          {submitting ? "Logging in…" : "Login"}
-        </Button>
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+              autoComplete="current-password"
+            />
+          </div>
 
-        <p className="text-sm text-center text-muted-foreground">
-          Don't have an account?{" "}
-          <Link href="/signup" className="text-foreground hover:underline">
-            Sign up
-          </Link>
-        </p>
-      </div>
+          <Button
+            className="w-full"
+            onClick={handleLogin}
+            disabled={submitting}
+          >
+            {submitting ? "Logging in…" : "Login"}
+          </Button>
+
+          <p className="text-center text-sm text-muted-foreground">
+            Don’t have an account?{" "}
+            <Link
+              href="/signup"
+              className="text-foreground font-medium hover:underline"
+            >
+              Sign up
+            </Link>
+          </p>
+        </CardContent>
+      </Card>
     </div>
   );
 }
